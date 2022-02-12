@@ -1,0 +1,46 @@
+package Analiizadores;
+
+parser code {:
+    /*Method that is called when parser can be recovered*/
+	public void syntax_error(Symbol s){ 
+        System.out.println("Unexpected token: " +s.value); 
+    }
+
+	/*Method that is called when parser can't be recovered*/
+	public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception{ 
+        System.out.println("Fatal error, unexcepted token: "+s.value); 
+    }
+
+    public void miFuncion() {
+    // ....
+    }
+:}
+
+terminal String EVALUAR, SUMA, RESTA, POR, DIV, NUMERO, DECIMAL, PTCOMA;
+non terminal inicio, instrucciones, instruccion;
+non terminal Double expresion;
+
+precedence left SUMA, RESTA;
+precedence left POR, DIV; 
+
+
+start with inicio; 
+
+inicio ::= instrucciones; 
+
+instrucciones ::= instrucciones instruccion
+| instruccion; 
+
+instruccion ::= EVALUAR expresion PTCOMA;
+
+expresion ::= expresion SUMA expresion
+| expresion RESTA expresion
+| expresion POR expresion
+| expresion DIV expresion
+| NUMERO 
+| DECIMAL
+;
+
+
+
+

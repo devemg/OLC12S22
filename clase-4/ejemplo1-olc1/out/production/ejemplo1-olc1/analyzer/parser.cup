@@ -1,0 +1,55 @@
+package analyzer;
+import java_cup.runtime.Symbol;
+import java.util.ArrayList;
+
+parser code {:
+    /*Method that is called when parser can be recovered*/
+	public void syntax_error(Symbol s){
+        //System.out.println("Unexpected token: " +s.value);
+        Datos.errores.add("Unexpected token: " +s.value);
+    }
+
+	/*Method that is called when parser can't be recovered*/
+	public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception{
+        //System.out.println("Fatal error, unexcepted token: "+s.value);
+        Datos.errores.add("Fatal error, unexcepted token: "+s.value);
+    }
+:}
+
+terminal String EVALUAR, SUMA, RESTA, POR, DIV, NUMERO, DECIMAL, PTCOMA;
+non terminal inicio;
+non terminal Double instruccion;
+non terminal ArrayList<Double> instrucciones;
+non terminal Double expresion;
+
+precedence left SUMA, RESTA;
+precedence left POR, DIV;
+
+
+start with inicio;
+
+inicio ::= instrucciones:lista {: Datos.resultados = lista; :};
+
+instrucciones ::= instrucciones:lista instruccion:a {:
+lista.add(a);
+RESULT = lista;
+:}
+| instruccion:a {: ArrayList<Double> lista = new ArrayList<>();
+lista.add(a);
+RESULT = lista;
+:};
+
+instruccion ::= EVALUAR expresion:exp PTCOMA {: RESULT = exp; :}
+| error;
+
+expresion ::= expresion:exp1 SUMA expresion:exp2 {: RESULT = exp1 + exp2;:}
+| expresion:exp1 RESTA expresion:exp2 {: RESULT = exp1 - exp2;:}
+| expresion:exp1 POR expresion:exp2 {: RESULT = exp1 * exp2;:}
+| expresion:exp1 DIV expresion:exp2 {: RESULT = exp1 / exp2;:}
+| NUMERO:num {: RESULT = new Double(num); :}
+| DECIMAL:num {: RESULT = new Double(num); :}
+;
+
+
+
+
