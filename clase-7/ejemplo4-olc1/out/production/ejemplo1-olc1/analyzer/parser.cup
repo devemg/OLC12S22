@@ -1,0 +1,84 @@
+package analyzer;
+import java_cup.runtime.Symbol;
+import java.util.ArrayList;
+import AST.NodoAST;
+import AST.TipoNodo;
+
+parser code {:
+    /*Method that is called when parser can be recovered*/
+	public void syntax_error(Symbol s){
+        //System.out.println("Unexpected token: " +s.value);
+        Datos.errores.add("Unexpected token: " +s.value);
+    }
+
+	/*Method that is called when parser can't be recovered*/
+	public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception{
+        //System.out.println("Fatal error, unexcepted token: "+s.value);
+        Datos.errores.add("Fatal error, unexcepted token: "+s.value);
+    }
+
+:}
+
+terminal String EVALUAR, SUMA, RESTA, POR, DIV, NUMERO, DECIMAL, PTCOMA;
+non terminal NodoAST inicio;
+non terminal NodoAST instruccion;
+non terminal ArrayList<NodoAST> instrucciones;
+non terminal NodoAST expresion;
+
+precedence left SUMA, RESTA;
+precedence left POR, DIV;
+
+
+start with inicio;
+
+inicio ::= instrucciones:lista {:
+NodoAST raiz = new NodoAST(TipoNodo.RAIZ);
+raiz.asignarHijos(lista);
+Datos.raiz = raiz;
+:};
+
+instrucciones ::= instrucciones:lista instruccion:inst {:
+lista.add(inst);
+RESULT = lista;
+:}
+| instruccion:a {:
+ArrayList<NodoAST> nodo = new ArrayList();
+nodo.add(a);
+RESULT = nodo;
+:};
+
+instruccion ::= EVALUAR expresion:exp PTCOMA {:
+NodoAST inst = new NodoAST(TipoNodo.INSTRUCCION);
+inst.agregarHijo(exp);
+RESULT = inst;
+:}
+| error PTCOMA;
+
+expresion ::= expresion:exp1 SUMA:op expresion:exp2 {:
+NodoAST operacion = new NodoAST(TipoNodo.SUMA);
+operacion.agregarHijo(exp1);
+operacion.agregarHijo(exp2);
+RESULT = operacion;:}
+| expresion:exp1 RESTA expresion:exp2 {:
+NodoAST operacion = new NodoAST(TipoNodo.RESTA);
+operacion.agregarHijo(exp1);
+operacion.agregarHijo(exp2);
+RESULT = operacion;:}
+| expresion:exp1 POR expresion:exp2 {:
+NodoAST operacion = new NodoAST(TipoNodo.MULTIPLICACION);
+operacion.agregarHijo(exp1);
+operacion.agregarHijo(exp2);
+RESULT = operacion;:}
+| expresion:exp1 DIV expresion:exp2 {:
+NodoAST operacion = new NodoAST(TipoNodo.DIVISION);
+operacion.agregarHijo(exp1);
+operacion.agregarHijo(exp2);
+RESULT = operacion;
+:}
+| NUMERO:num {: RESULT = new NodoAST(TipoNodo.ENTERO, num); :}
+| DECIMAL:num {: RESULT = new NodoAST(TipoNodo.DECIMAL, num); :}
+;
+
+
+
+
