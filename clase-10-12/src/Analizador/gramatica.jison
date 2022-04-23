@@ -1,6 +1,7 @@
 ///configuraciones
 %{
-
+    const { Aritmetica, TipoAritmetica } = require('./AST/Expresion/aritmetica.js');
+    const { Valor } = require('./AST/Expresion/valor.js');
 %}
 
 %lex
@@ -44,9 +45,6 @@
 "double"                                                        return 'pr_double';
 "boolean"                                                       return 'pr_boolean';
 "string"                                                        return 'pr_string';
-"date"                                                          return 'pr_date';
-"counter"                                                       return 'pr_counter';
-"time"                                                          return 'pr_time';
 "function"                                                      return 'pr_function';
 "print"                                                         return 'pr_print';
 "for"                                                           return 'pr_for';
@@ -56,36 +54,7 @@
 "else"                                                          return 'pr_else';
 "true"                                                          return 'pr_true';
 "false"                                                         return 'pr_false';
-"create"                                                        return 'pr_create';
-"use"                                                           return 'pr_use';
-"drop"                                                          return 'pr_drop';
-"not"                                                           return 'pr_not';
-"exists"                                                        return 'pr_exists';
-"database"                                                      return 'pr_database';
-"table"                                                         return 'pr_table';
-"primary"                                                       return 'pr_primary';
-"key"                                                           return 'pr_key';
-"alter"                                                         return 'pr_alter';
-"add"                                                           return 'pr_add';
-"truncate"                                                      return 'pr_truncate';
-"rollback"                                                      return 'pr_rollback';
-"commit"                                                        return 'pr_commit';
-"user"                                                          return 'pr_user';
-"with"                                                          return 'pr_with';
-"password"                                                      return 'pr_password';
-"on"                                                            return 'pr_on';
-"grant"                                                         return 'pr_grant';
-"revoke"                                                        return 'pr_revoke';
-"insert"                                                        return 'pr_insert';
-"into"                                                          return 'pr_into';
-"values"                                                        return 'pr_values';
-"set"                                                           return 'pr_set';
-"where"                                                         return 'pr_where';
-"update"                                                        return 'pr_update';
-"delete"                                                        return 'pr_delete';
-"from"                                                          return 'pr_from';
-"select"                                                        return 'pr_select';
-"where"                                                         return 'pr_where';
+
 
 
 /* EXPRESIONES REGULARES */
@@ -96,13 +65,12 @@
 [a-zA-Z_]+[a-zA-Z_0-9]*\b                                       return 'val_variable';
 <<EOF>>                                                         return 'EOF';
 
-.                           { console.log('error léxico'); errores.push(new ErrorLexico(yytext, yylloc.first_line, yylloc.first_column)); }
+.                           { console.log('error léxico'); }
 
 /lex
 
 
 
-%left 'tk_interrogacion' 'tk_dpuntos'
 %left 'tk_or'
 %left 'tk_and'
 %left 'tk_diferente' 'tk_igual'
@@ -119,5 +87,33 @@
 %% 
 // Producciones
 
-INICIO : EOF
+INICIO : EXPRESION EOF {
+    return $1;
+}
+;
+
+EXPRESION : EXPRESION tk_suma EXPRESION {
+    $$ = new Aritmetica($1,$3,TipoAritmetica.SUMA,@2.first_line, @2.first_column);
+}
+| EXPRESION tk_resta EXPRESION {
+    $$ = new Aritmetica($1,$3,TipoAritmetica.RESTA,@2.first_line, @2.first_column);
+}
+|EXPRESION tk_por EXPRESION {
+    $$ = new Aritmetica($1,$3,TipoAritmetica.MULTIPLICACION,@2.first_line, @2.first_column);
+}
+|EXPRESION tk_div EXPRESION {
+    $$ = new Aritmetica($1,$3,TipoAritmetica.DIVISION,@2.first_line, @2.first_column);
+}
+| VALORES
+| tk_par1 EXPRESION tk_par2 {
+    $$ = $2;
+}
+;
+
+VALORES : val_decimal {
+   $$ = new Valor($1,@1.first_line, @1.first_column);
+}
+| val_entero {
+    $$ = new Valor($1,@1.first_line, @1.first_column);
+}
 ;
