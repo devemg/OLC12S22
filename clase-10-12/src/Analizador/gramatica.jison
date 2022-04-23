@@ -1,6 +1,7 @@
 ///configuraciones
 %{
     const { Aritmetica, TipoAritmetica } = require('./AST/Expresion/aritmetica.js');
+    const { Relacional, TipoRelacional } = require('./AST/Expresion/relacional.js');
     const { Valor } = require('./AST/Expresion/valor.js');
 %}
 
@@ -108,7 +109,29 @@ EXPRESION : EXPRESION tk_suma EXPRESION {
 | tk_par1 EXPRESION tk_par2 {
     $$ = $2;
 }
+| RELACIONALES {
+    $$ = $1;
+}
 ;
+
+RELACIONALES : EXPRESION tk_menor EXPRESION {
+    $$ = new Relacional($1,$3,TipoRelacional.MENOR,@2.first_line, @2.first_column);
+}
+|EXPRESION tk_mayor EXPRESION {
+    $$ = new Relacional($1,$3,TipoRelacional.MAYOR,@2.first_line, @2.first_column);
+}
+|EXPRESION tk_menor_igual EXPRESION {
+    $$ = new Relacional($1,$3,TipoRelacional.MENORIGUAL,@2.first_line, @2.first_column);
+}
+|EXPRESION tk_mayor_igual EXPRESION {
+    $$ = new Relacional($1,$3,TipoRelacional.MAYORIGUAL,@2.first_line, @2.first_column);
+}
+|EXPRESION tk_igual tk_igual EXPRESION {
+    $$ = new Relacional($1,$3,TipoRelacional.IGUAL,@2.first_line, @2.first_column);
+}
+|EXPRESION tk_diferente EXPRESION {
+    $$ = new Relacional($1,$3,TipoRelacional.DIFERENTE,@2.first_line, @2.first_column);
+};
 
 VALORES : val_decimal {
    $$ = new Valor($1,@1.first_line, @1.first_column);
