@@ -3,6 +3,10 @@
     const { Aritmetica, TipoAritmetica } = require('./AST/Expresion/aritmetica.js');
     const { Relacional, TipoRelacional } = require('./AST/Expresion/relacional.js');
     const { Valor } = require('./AST/Expresion/valor.js');
+    const { Print } = require('./AST/Sentencia/print.js');
+    const { Declaracion } = require('./AST/Sentencia/declaracion.js');
+    const { Asignacion } = require('./AST/Sentencia/asignacion.js');
+    const { TipoDato } = require('./AST/tipo-dato.js');
 %}
 
 %lex
@@ -88,10 +92,47 @@
 %% 
 // Producciones
 
-INICIO : EXPRESION EOF {
+INICIO :  SENTENCIAS EOF {
     return $1;
 }
 ;
+
+SENTENCIAS : SENTENCIAS SENTENCIA {
+    $1.push($2);
+    $$ = $1;
+}
+| SENTENCIA {
+    $$ = [$1];
+}
+;
+
+SENTENCIA : PRINT { $$ = $1; }
+| DECLARACION { $$ = $1; }
+| ASIGNACION { $$ = $1; }
+;
+
+
+ASIGNACION : val_variable tk_igual EXPRESION tk_pycoma {
+    $$ = new Asignacion($1, $3, @2.first_line, @2.first_column);
+};
+
+DECLARACION : TIPO val_variable tk_pycoma{
+    $$ = new Declaracion($1,$2, null, @3.first_line, @3.first_column);
+}
+|TIPO val_variable tk_igual EXPRESION tk_pycoma {
+    $$ = new Declaracion($1,$2,$4, @3.first_line, @3.first_column);
+};
+
+TIPO: pr_int {
+    $$ = TipoDato.ENTERO;
+}
+| pr_double {
+    $$ = TipoDato.DECIMAL;
+};
+
+PRINT : pr_print tk_par1 EXPRESION tk_par2 tk_pycoma {
+    $$ = new Print($3,@1.first_line, @1.first_column);
+};
 
 EXPRESION : EXPRESION tk_suma EXPRESION {
     $$ = new Aritmetica($1,$3,TipoAritmetica.SUMA,@2.first_line, @2.first_column);

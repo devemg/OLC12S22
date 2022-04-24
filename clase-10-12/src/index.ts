@@ -1,3 +1,6 @@
+import { Sentencia } from "./Analizador/AST/Sentencia/sentencia";
+import { TablaSimbolos } from "./Analizador/AST/tabla-simbolos";
+
 const gramatica = require('../dist/Analizador/gramatica');
 var fs = require('fs');
 
@@ -7,7 +10,11 @@ fs.readFile('src/codigo-fuente.txt', (err:any, data:any) => {
     }
     const text = data.toString();
     const response = gramatica.parse(text);
-    console.log('LA RESPUESTA ES: ', response.getValue());
+    const ts = new TablaSimbolos();
+    response.forEach((element: Sentencia) => {
+        element.ejectuar(ts);
+    });
+    console.log(ts);
     try {
        
      } catch (e) {
